@@ -1,5 +1,10 @@
 import { Link } from "expo-router";
 import { useState } from "react";
+import { useSignUp } from "@clerk/clerk-expo";
+import { Route } from "expo-router";
+import { useRouter } from "expo-router";
+
+
 import {
   View,
   Text,
@@ -7,10 +12,36 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import SignUp from "./signUp";
 
 export default function Login() {
+    const {signUp,isLoaded} = useSignUp()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
+
+  const onSignUpPress = async () => {
+  if (!isLoaded) return;
+
+  try {
+    await signUp.create({
+      emailAddress: email,
+      password,
+    });
+
+    await signUp.prepareEmailAddressVerification({
+      strategy: "email_code",
+    });
+
+    router.push("/(auth)/verify");
+  } catch (err: any) {
+    console.log(JSON.stringify(err, null, 2));
+  }
+};
+
+
+
+
 
   return (
     <View style={styles.container}>

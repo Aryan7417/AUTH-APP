@@ -1,44 +1,71 @@
-import { Link } from "expo-router";
+import { useSignIn } from "@clerk/clerk-expo";
+import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { useSignUp } from "@clerk/clerk-expo";
-import { Route } from "expo-router";
-import { useRouter } from "expo-router";
+
+
 
 
 import {
-  View,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
+  View,
 } from "react-native";
-import SignUp from "./signUp";
 
 export default function Login() {
-    const {signUp,isLoaded} = useSignUp()
+  const { signIn, setActive, isLoaded } = useSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const onSignUpPress = async () => {
-  if (!isLoaded) return;
+  // const onSignUpPress = async () => {
+  //   if (!isLoaded) return;
 
-  try {
-    await signUp.create({
-      emailAddress: email,
-      password,
+  //   try {
+  //     await signUp.create({
+  //       emailAddress: email,
+  //       password,
+  //     });
+
+  //     await signUp.prepareEmailAddressVerification({
+  //       strategy: "email_code",
+  //     });
+
+  //     router.push("/(root)/Home");
+  //   } catch (err: any) {
+  //     console.log(JSON.stringify(err, null, 2));
+  //   }
+  // };
+
+
+  const onLoginPress = async () => {
+
+    console.log("Email:", `"${email}"`);
+    console.log("Password:", `"${password}"`);
+    if (!isLoaded) return;
+
+    try {
+      const result = await signIn.create({
+        identifier: email,
+        password,
+      });
+
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+
+        router.replace("/(root)/Home");
+      }
+    } catch (err: any) {
+      console.log(JSON.stringify(err, null, 2));
+    }
+    const result = await signIn.create({
+      identifier: email.trim().toLowerCase(),
+      password: password,
     });
 
-    await signUp.prepareEmailAddressVerification({
-      strategy: "email_code",
-    });
-
-    router.push("/(auth)/verify");
-  } catch (err: any) {
-    console.log(JSON.stringify(err, null, 2));
-  }
-};
-
+    console.log("Login Result:", JSON.stringify(result, null, 2));
+  };
 
 
 
@@ -65,7 +92,9 @@ export default function Login() {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity
+        onPress={onLoginPress}
+        style={styles.button}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 

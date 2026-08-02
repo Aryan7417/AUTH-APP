@@ -1,17 +1,85 @@
-import { Link } from "expo-router";
+import { useSignUp } from "@clerk/clerk-expo";
+import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  View,
+  Alert,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
+  View
 } from "react-native";
+
+
+
 
 export default function SignUp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { signUp, isLoaded } = useSignUp();
+  const router = useRouter()
+
+  // const onSignUpPress = async () => {
+  //   if (!isLoaded) return
+
+  //   try {
+  //     await signUp.create({
+  //       emailAddress: email,
+  //       password,
+  //     })
+  //     await signUp.prepareEmailAddressVerification({
+  //       strategy: 'email_code'
+  //     })
+  //     router.push("/(auth)/Verify")
+
+  //   } catch (err: any) {
+  //     console.log(JSON.stringify(err, null, 2))
+  //     Alert.alert(
+  //   "Signup Failed",
+  //   err.errors?.[0]?.longMessage || "Something went wrong"
+  // );
+
+  //   }
+  //   console.log("Button pressed")
+
+
+  // }
+
+
+
+  const onSignUpPress = async () => {
+    if (!isLoaded) return;
+
+    try {
+      console.log("Creating account...");
+
+      const result = await signUp.create({
+        emailAddress: email,
+        password,
+      });
+
+      console.log("Account Created:", result);
+
+      await signUp.prepareEmailAddressVerification({
+        strategy: "email_code",
+      });
+
+      console.log("OTP Sent");
+
+      router.push("/(auth)/Verify");
+    } catch (err: any) {
+      console.log("Signup Error");
+      console.log(JSON.stringify(err, null, 2));
+
+      Alert.alert(
+        "Signup Failed",
+        err.errors?.[0]?.longMessage || "Something went wrong"
+      );
+    }
+  };
+
+
 
   return (
     <View style={styles.container}>
@@ -42,7 +110,10 @@ export default function SignUp() {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button}
+        onPress={onSignUpPress}
+
+      >
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
 
